@@ -5,9 +5,9 @@ using UnityEngine.Profiling;
 
 public class BodyGenerator : MonoBehaviour
 {
+    public Vector3 centerOfMassOffSet;
     public Vector3 startPosition;
     private bool start = true;
-    public float speed;
     public float thickness;
     public float offSetX;
     public float offSetY;
@@ -65,7 +65,7 @@ public class BodyGenerator : MonoBehaviour
         Vector3 temp;
         Vector3 bodyPosition;
         //points = new Vector3[] { new Vector3(1,0,0), new Vector3(6,0, 0), new Vector3(10, 0, 0), new Vector3(20, 0, 0) };
-        if (points.Length > 5)
+        if (points.Length > 8)
         {
             
             bodyRB.velocity = Vector3.zero;
@@ -111,7 +111,7 @@ public class BodyGenerator : MonoBehaviour
             mesh = new Mesh();
             
             mesh.SetVertices(vertices.ToArray());
-            for(int i = 0; i < vertices.Count-8; i+=4)
+            for(int i = 0; i < vertices.Count-4; i+=4)
             {
 
                 triangles.Add(i);
@@ -437,10 +437,11 @@ public class BodyGenerator : MonoBehaviour
 
             wheelOne.transform.localPosition = colliders[0].center ;
             wheelTwo.transform.localPosition = colliders[colliders.Count - 1].center;
-            colliders[0].radius = 0.3f;
-            colliders[colliders.Count - 1].radius = 0.3f;
+            colliders[0].radius = 0.4f;
+            colliders[colliders.Count - 1].radius = 0.4f;
             //bodyRB.centerOfMass = Vector3.down*Mathf.Abs( bodyRenderer.bounds.size.y);
             bodyRB.ResetCenterOfMass();
+            bodyRB.centerOfMass += centerOfMassOffSet*bodyRenderer.bounds.size.y;
         }
         Profiler.EndSample();
     }
@@ -448,7 +449,7 @@ public class BodyGenerator : MonoBehaviour
     Vector3[] Smooth(Vector3[] points)
     {
         List<Vector3> temp= new List<Vector3>();
-        List<Vector3> simp = new List<Vector3>();
+        //List<Vector3> simp = new List<Vector3>();
        
         for (int i = 1; i < points.Length-1; i++)
         {
@@ -466,10 +467,10 @@ public class BodyGenerator : MonoBehaviour
         RaycastHit hit;
         int layerMask = 1 << 10;
         float maxHeight = -100;
-        startPoint += 100*Vector3.up - size.magnitude*Vector3.left;
+        startPoint += 100*Vector3.up - size.magnitude*Vector3.back;
         for(float i = 0; i < size.magnitude*2; i += scanSize)
         {
-            if(Physics.Raycast(startPoint+i*Vector3.right,Vector3.down,out hit, 200, layerMask))
+            if(Physics.Raycast(startPoint+i*Vector3.forward,Vector3.down,out hit, 200, layerMask))
             {
                 if (hit.transform.gameObject.CompareTag("Way"))
                 {
@@ -479,7 +480,7 @@ public class BodyGenerator : MonoBehaviour
                 }
             }
         }
-        Debug.Log(maxHeight);
+        //Debug.Log(maxHeight);
         return maxHeight+1;
     }
 

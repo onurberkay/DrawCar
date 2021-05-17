@@ -1,9 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+
 
 public class Line : MonoBehaviour
 {
+    public string address;
     public float thickness;
     public float bodyThickness;
     public Material mat;
@@ -18,9 +23,14 @@ public class Line : MonoBehaviour
     private RectTransform panel;
     private bool once = false;
     private Vector2 point;
+    private PointData pointData;
+    private bool start = true;
+    private float startTime;
+    
     // Start is called before the first frame update
     void Start()
     {
+        pointData = new PointData();
         linerenderer = this.gameObject.GetComponent<LineRenderer>();
         linerenderer.startWidth = thickness;
         linerenderer.endWidth = thickness;
@@ -41,8 +51,12 @@ public class Line : MonoBehaviour
     {
         if (Input.GetMouseButton(0))
         {
-            
-            
+
+            if (start)
+            {
+                startTime = Time.time;
+                start = false;
+            }
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 panel.transform as RectTransform,
                 Input.mousePosition, canvas.worldCamera,
@@ -70,6 +84,17 @@ public class Line : MonoBehaviour
         }
         else
         {
+            if (pointsForBody.Count > 8)
+            {
+                Points tempPoints = new Points();
+                pointData.times.Add(Time.time-startTime);
+                for(int i=0;i< pointsForBody.Count; i++)
+                {
+                    tempPoints.points.Add(pointsForBody[i]);
+                }
+                pointData.list.Add(tempPoints);
+                Debug.Log("count"+pointData.list[0].points.Count);
+            }
             bodyScript.SetPoints(pointsForBody.ToArray());
             points.Clear();
             pointsForBody.Clear();
@@ -80,7 +105,40 @@ public class Line : MonoBehaviour
     {
         linerenderer.positionCount = points.Count;
         linerenderer.SetPositions(points.ToArray());
+
+        
         
     }
 
+    private void OnApplicationQuit()
+    {
+        // Create a field of this class for the file to write
+        string saveFile = "assets/"+address;
+
+        // Create a single FileStream to be overwritten as needed in the class.
+        FileStream dataStream;
+
+        // Create a single BinaryFormatter to be used across methods.
+        BinaryFormatter converter = new BinaryFormatter();
+
+        // Create a FileStream connected to the saveFile path.
+        // Set the file mode to "Create".
+        dataStream = new FileStream(saveFile, FileMode.Create);
+
+
+
+        SurrogateSelector surrogateSelector = new SurrogateSelector();
+        Vector3SerializationSurrogate vector3SS = new Vector3SerializationSurrogate();
+
+        surrogateSelector.AddSurrogate(typeof(Vector3), new StreamingContext(StreamingContextStates.All), vector3SS);
+        converter.SurrogateSelector = surrogateSelector;
+
+
+
+
+        converter.Serialize(dataStream,pointData);
+
+        // Close stream.
+        dataStream.Close();
+    }
 }

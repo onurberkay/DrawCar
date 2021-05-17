@@ -8,6 +8,7 @@ public class CameraFollow : MonoBehaviour
     public GameObject body;
     public float followSpeed;
     public Vector3 offset;
+    public float back;
     public float backSpeed;
     private GameObject cam;
     private Renderer rendererBody;
@@ -26,7 +27,7 @@ public class CameraFollow : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        cam.transform.position = new Vector3( Mathf.Lerp(cam.transform.position.x, offset.x+camFirstX + followRB.velocity.magnitude * backSpeed,0.2f), Mathf.Lerp( cam.transform.position.y,offset.y+rendererBody.bounds.center.y,followSpeed), Mathf.Lerp(cam.transform.position.z, offset.z+rendererBody.bounds.center.z, followSpeed));
+        cam.transform.position = new Vector3( Mathf.Lerp(cam.transform.position.x, offset.x+camFirstX + followRB.velocity.magnitude * back,backSpeed), Mathf.Lerp( cam.transform.position.y,offset.y+rendererBody.bounds.center.y,followSpeed), Mathf.Lerp(cam.transform.position.z, offset.z+rendererBody.bounds.center.z, followSpeed));
 
         //temp.transform.position = cam.transform.position;
         //temp.transform.LookAt(follow.transform,Vector3.up);
